@@ -12,6 +12,16 @@
 
 #define MAX_LINE_LENGTH 1024
 
+
+
+const w88_asm_reg_t regs[] = {
+    {"A", W88_REG_A},
+    {"X", W88_REG_X},
+    {"Y", W88_REG_Y},
+    {"SP", W88_REG_SP},
+    {"SR", W88_REG_SR},
+};
+
 char *trim(char *s) {
     char *end;
     while (*s && (isspace((int)*s))) s++;
@@ -72,14 +82,114 @@ uint16_t addr_inst(char **parts, char *name, char *file, int lineno, int num, ui
     return ((uint16_t)opcode << 8) | operand;
 }
 
+uint16_t imm_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode, uint8_t _) {
+    (void)_;
+    uint8_t operand = 0;
+    if (num < 2) {
+        printf("ERROR %s:%i: instruction %s expects an operand\n", file, lineno, name);
+        exit(1);
+    }
+    operand = strtol(parts[1], NULL, 16);
+    return ((uint16_t)opcode << 8) | operand;
+}
+
 uint16_t nop_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode, uint8_t _) {
     (void)parts;
     (void)_;
     if (num > 1) {
-        printf("ERROR %s:%i: instruction %s requires no arguments", file, lineno, name);
+        printf("ERROR %s:%i: instruction %s requires no arguments\n", file, lineno, name);
         exit(1);
     }
     return ((uint16_t)opcode << 8) | 0;
+}
+
+uint16_t reg_imm_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode_imm, uint8_t opcode_reg) {
+    uint8_t opcode = 0;
+    uint8_t operand = 0;
+    if (num < 2) {
+        printf("ERROR %s:%i: instruction %s expects an operand\n", file, lineno, name);
+        exit(1);
+    }
+
+    if (isdigit(parts[1][0])) {
+        opcode = opcode_imm;
+        operand = strtol(parts[1], NULL, 16);
+    }
+    else {
+        opcode = opcode_reg;
+        bool invalid_operand = false;
+
+        for (unsigned int i = 0; i < sizeof(regs) / sizeof(w88_asm_reg_t); i++) {
+            invalid_operand = false;
+            if (strcmp(parts[1], regs[i].name)) {
+                operand = regs[i].reg_id;
+                break;
+            }
+            invalid_operand = true;
+        }
+        if (invalid_operand) {
+            printf("ERROR %s:%i: instruction %s needs a register as an argument\n", file, lineno, name);
+            exit(1);
+        }
+    }
+    return ((uint16_t)opcode << 8) | operand;
+}
+
+uint16_t reg_reg_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode, uint8_t _) {
+    (void)_;
+    uint8_t operand_p1 = 0;
+    uint8_t operand_p2 = 0;
+    if (num < 3) {
+        printf("ERROR %s:%i: instruction %s expects 2 operand\n", file, lineno, name);
+        exit(1);
+    }
+    parts[1][strlen(parts[1]) - 1] = '\0';
+    
+    bool invalid_operand = false;
+    bool gp1, gp2 = false;
+    for (unsigned int i = 0; i < sizeof(regs) / sizeof(w88_asm_reg_t); i++) {
+        invalid_operand = false;
+        if (strcmp(parts[1], regs[i].name)) {
+            operand_p1 = regs[i].reg_id;
+            gp1 = true;
+        }
+        if (strcmp(parts[2], regs[i].name)) {
+            operand_p2 = regs[i].reg_id;
+            gp2 = true;
+        }
+
+        if (gp1 && gp2) break;
+        invalid_operand = true;
+    }
+    if (invalid_operand) {
+        printf("ERROR %s:%i: instruction %s needs a register as an argument\n", file, lineno, name);
+        exit(1);
+    }
+
+    return ((uint16_t)opcode << 8) | ((operand_p1 >> 4) | (operand_p2 & 0x0F));
+}
+
+uint16_t reg_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode, uint8_t _) {
+    (void)_;
+    if (num > 2) {
+        printf("ERROR %s:%i: instruction %s requires no arguments\n", file, lineno, name);
+        exit(1);
+    }
+    uint8_t operand = 0;
+    bool invalid_operand = false;
+
+    for (unsigned int i = 0; i < sizeof(regs) / sizeof(w88_asm_reg_t); i++) {
+        invalid_operand = false;
+        if (strcmp(parts[1], regs[i].name)) {
+            operand = regs[i].reg_id;
+        }
+        invalid_operand = true;
+    }
+    if (invalid_operand) {
+        printf("ERROR %s:%i: instruction %s needs a register as an argument\n", file, lineno, name);
+        exit(1);
+    }
+    return ((uint16_t)opcode << 8) | operand;
 }
 
 const w88_asm_instruction_t instructions[] = {
@@ -90,6 +200,8 @@ const w88_asm_instruction_t instructions[] = {
     {"STA", addr_inst, W88_OP_STA, 0},
     {"STX", addr_inst, W88_OP_STX, 0},
     {"STY", addr_inst, W88_OP_STY, 0},
+
+    {"MOV", reg_reg_inst, W88_OP_MOV, 0},
 
     {"JMP", addr_inst, W88_OP_JMP, 0},
     {"JSR", addr_inst, W88_OP_JSR, 0},
@@ -103,6 +215,14 @@ const w88_asm_instruction_t instructions[] = {
     {"RTS", nop_inst, W88_OP_RTS, 0},
     {"WAIT", nop_inst, W88_OP_WAIT, 0},
     {"DRAW", nop_inst, W88_OP_DRAW, 0},
+    {"INC", nop_inst, W88_OP_INC, 0},
+    {"DEC", nop_inst, W88_OP_DEC, 0},
+
+    {"SHL", reg_inst, W88_OP_SHL, 0},
+    {"SHR", reg_inst, W88_OP_SHR, 0},
+    
+    {"PUSH", reg_inst, W88_OP_PUSH, 0},
+    {"POP", reg_inst, W88_OP_PUSH, 0},
 };
 
 int main(int argc, char *argv[]) {

@@ -6,7 +6,7 @@ The Willow88 will have 64KB of memory space, allocated as follows
 
 ### Registers
 Willow88 has 6 16-bit registers.
- - `A`: Accumulator register (Main register for math and logic)
+ - `A`: Accumulator register (Register used for math and logic)
  - `X`, `Y`: Index registers
  - `SP`: Stack pointer
  - `PC`: Program counter
@@ -47,24 +47,22 @@ Instructions in Willow88 are stored as a 3 byte value, no matter the instruction
 | LDY addr | 0x07 | LDY $1234 | Load Y from memory |
 | STX addr | 0x08 | STX $1234 | Store X to memory |
 | STY addr | 0x09 | STY $1234 | Store Y to memory |
-| MOV A, X | 0x0A | - | Copy X into A |
-| MOV X, A | 0x0B | - | Copy A into X |
-| MOV A, Y | 0x0C | - | Copy Y into A |
-| MOV Y, A | 0x0D | - | Copy A into Y |
+| MOV reg1, reg2 | 0x0A | - | Copy reg1 into reg2 |
 
 ## Arithmetic and Logic
 | Mnemonic | Opcode | Format | Description |
 | -------- | ------ | ------ | ----------- |
-| ADD A, imm | 0x10 | ADD A, 0x34 | Add immediate to A |
-| ADD A, B | 0x11 | - | Add B to A |
-| SUB A, imm | 0x12 | ADD A, 0x34 | Subtract immediate to A|
-| AND A, imm | 0x13 | AND A, 0x34 | Logical AND |
-| OR A, imm | 0x14 | OR A, 0x34 | Logical OR |
-| XOR A, imm | 0x15 | XOR A, 0x34 | Logical XOR |
-| INC A | 0x16 | - | Increment A |
-| DEC A | 0x17 | - | Decrement A |
-| SHL A | 0x18 | - | Logical shift left |
-| SHR A | 0x19 | - | Logical shift right |
+| ADD imm | 0x10 | ADD 0x34 | Add immediate to A |
+| ADD X | 0x11 | - | Add X to A |
+| ADD Y | 0x12 | - | Add Y to A |
+| SUB imm | 0x13 | SUB 0x34 | Subtract immediate to A|
+| AND imm | 0x14 | AND 0x34 | Logical AND |
+| OR imm | 0x15 | OR 0x34 | Logical OR |
+| XOR imm | 0x16 | XOR 0x34 | Logical XOR |
+| INC | 0x17 | - | Increment A |
+| DEC | 0x18 | - | Decrement A |
+| SHL reg | 0x19 | - | Logical shift left |
+| SHR reg | 0x1A | - | Logical shift right |
 
 ## Control flow 
 | Mnemonic | Opcode | Format | Description |
@@ -80,10 +78,8 @@ Instructions in Willow88 are stored as a 3 byte value, no matter the instruction
 ## Stack operations
 | Mnemonic | Opcode | Format | Description |
 | -------- | ------ | ------ | ----------- |
-| PUSH A | 0x30 | - | Push A to stack |
-| POP A | 0x31 | - | Pop from stack into A |
-| PUSH SR | 0x32 | - | Push status flags |
-| POP SR  | 0x33 | - | Pop into status flags |
+| PUSH reg | 0x30 | PUSH A | Push reg to stack |
+| POP reg | 0x31 | POP A | Pop from stack into reg |
 
 ## System specific
 | Mnemonic | Opcode | Format | Description |

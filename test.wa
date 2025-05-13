@@ -2,4 +2,7 @@ LDA 0x34
 LDX 0x46
 LDY 0x13
 STA $10
+
+MOV Y, X
+
 HLT

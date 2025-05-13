@@ -10,4 +10,9 @@ typedef struct {
     uint8_t inst_b;
 } w88_asm_instruction_t;
 
+typedef struct {
+    char *name;
+    uint8_t reg_id;
+} w88_asm_reg_t;
+
 #endif //_W88_ASM_H
