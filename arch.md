@@ -38,27 +38,27 @@ Instructions in Willow88 are stored as a 3 byte value, no matter the instruction
 ## Data movement
 | Mnemonic | Opcode | Format | Description |
 | -------- | ------ | ------ | ----------- |
-| LDA imm | 0x01 | LDA 0x34 | Load immediate into A |
-| LDA addr | 0x02 | LDA $1234 | Load A from memory |
-| STA addr | 0x03 | STA $1234 | Store A to memory|
-| LDX imm | 0x04 | LDX 0x34 | Load immediate into X |
-| LDY imm | 0x05 | LDY 0x34 | Load immediate into Y |
-| LDX addr | 0x06 | LDX $1234 | Load X from memory |
-| LDY addr | 0x07 | LDY $1234 | Load Y from memory |
-| STX addr | 0x08 | STX $1234 | Store X to memory |
-| STY addr | 0x09 | STY $1234 | Store Y to memory |
+| LDA imm | 0x01 | LDA $34 | Load immediate into A |
+| LDA addr | 0x02 | LDA 0x1234 | Load A from memory |
+| STA addr | 0x03 | STA 0x1234 | Store A to memory|
+| LDX imm | 0x04 | LDX $34 | Load immediate into X |
+| LDY imm | 0x05 | LDY $34 | Load immediate into Y |
+| LDX addr | 0x06 | LDX 0x1234 | Load X from memory |
+| LDY addr | 0x07 | LDY 0x1234 | Load Y from memory |
+| STX addr | 0x08 | STX 0x1234 | Store X to memory |
+| STY addr | 0x09 | STY 0x1234 | Store Y to memory |
 | MOV reg1, reg2 | 0x0A | - | Copy reg1 into reg2 |
 
 ## Arithmetic and Logic
 | Mnemonic | Opcode | Format | Description |
 | -------- | ------ | ------ | ----------- |
-| ADD imm | 0x10 | ADD 0x34 | Add immediate to A |
+| ADD imm | 0x10 | ADD $34 | Add immediate to A |
 | ADD X | 0x11 | - | Add X to A |
 | ADD Y | 0x12 | - | Add Y to A |
-| SUB imm | 0x13 | SUB 0x34 | Subtract immediate to A|
-| AND imm | 0x14 | AND 0x34 | Logical AND |
-| OR imm | 0x15 | OR 0x34 | Logical OR |
-| XOR imm | 0x16 | XOR 0x34 | Logical XOR |
+| SUB imm | 0x13 | SUB $34 | Subtract immediate to A|
+| AND imm | 0x14 | AND $34 | Logical AND |
+| OR imm | 0x15 | OR $34 | Logical OR |
+| XOR imm | 0x16 | XOR $34 | Logical XOR |
 | INC | 0x17 | - | Increment A |
 | DEC | 0x18 | - | Decrement A |
 | SHL reg | 0x19 | - | Logical shift left |
@@ -67,13 +67,13 @@ Instructions in Willow88 are stored as a 3 byte value, no matter the instruction
 ## Control flow 
 | Mnemonic | Opcode | Format | Description |
 | -------- | ------ | ------ | ----------- |
-| JMP addr | 0x20 | JMP $1234 | Unconditional jump |
-| JSR addr | 0x21 | JSR $1234 | Jump to subroutine |
+| JMP addr | 0x20 | JMP 0x1234 | Unconditional jump |
+| JSR addr | 0x21 | JSR 0x1234 | Jump to subroutine |
 | RTS | 0x22 | - | Return from subroutine |
-| BEQ addr | 0x23 | BEQ $1234 | Branch if zero flag is set |
-| BNE addr | 0x24 | BNE $1234 | Branch if zero flag not set |
-| BCC addr | 0x25 | BCC $1234 | Branch if carry flag set |
-| BCS addr | 0x26 | BCS $1234 | Branch if carry flag not set |
+| BEQ addr | 0x23 | BEQ 0x1234 | Branch if zero flag is set |
+| BNE addr | 0x24 | BNE 0x1234 | Branch if zero flag not set |
+| BCC addr | 0x25 | BCC 0x1234 | Branch if carry flag set |
+| BCS addr | 0x26 | BCS 0x1234 | Branch if carry flag not set |
 
 ## Stack operations
 | Mnemonic | Opcode | Format | Description |

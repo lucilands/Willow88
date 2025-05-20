@@ -54,11 +54,11 @@ uint16_t addr_imm_inst(char **parts, char *name, char *file, int lineno, int num
         exit(1);
     }
     if (parts[1][0] == '$') {
-        opcode = opcode_addr;
+        opcode = opcode_imm;
         operand = atoi(parts[1]+1);
     }
     else {
-        opcode = opcode_imm;
+        opcode = opcode_addr;
         operand = strtol(parts[1], NULL, 16);
     }
     return ((uint16_t)opcode << 8) | operand;
@@ -71,14 +71,8 @@ uint16_t addr_inst(char **parts, char *name, char *file, int lineno, int num, ui
         printf("ERROR %s:%i: instruction %s expects an operand\n", file, lineno, name);
         exit(1);
     }
-    if (parts[1][0] == '$') {
-        operand = atoi(parts[1]+1);
-    }
-    else {
-        printf("ERROR %s:%i: instruction %s expects address operand\n", file, lineno, name);
-        exit(1);
-    }
-
+    
+    operand = strtol(parts[1], NULL, 16);
     return ((uint16_t)opcode << 8) | operand;
 }
 
@@ -89,7 +83,13 @@ uint16_t imm_inst(char **parts, char *name, char *file, int lineno, int num, uin
         printf("ERROR %s:%i: instruction %s expects an operand\n", file, lineno, name);
         exit(1);
     }
-    operand = strtol(parts[1], NULL, 16);
+    if (parts[1][0] == '$') {
+        operand = atoi(parts[1]+1);
+    }
+    else {
+        printf("ERROR %s:%i: instruction %s expects an immediate\n", file, lineno, name);
+        exit(1);
+    }
     return ((uint16_t)opcode << 8) | operand;
 }
 
@@ -111,9 +111,9 @@ uint16_t reg_imm_inst(char **parts, char *name, char *file, int lineno, int num,
         exit(1);
     }
 
-    if (isdigit(parts[1][0])) {
+    if (parts[1][0] == '$') {
         opcode = opcode_imm;
-        operand = strtol(parts[1], NULL, 16);
+        operand = strtol(parts[1]+1, NULL, 16);
     }
     else {
         opcode = opcode_reg;
@@ -146,14 +146,15 @@ uint16_t reg_reg_inst(char **parts, char *name, char *file, int lineno, int num,
     parts[1][strlen(parts[1]) - 1] = '\0';
     
     bool invalid_operand = false;
-    bool gp1, gp2 = false;
+    bool gp1 = false;
+    bool gp2 = false;
     for (unsigned int i = 0; i < sizeof(regs) / sizeof(w88_asm_reg_t); i++) {
         invalid_operand = false;
-        if (strcmp(parts[1], regs[i].name)) {
+        if ((strcmp(trim(parts[1]), regs[i].name) == 0) && !gp1) {
             operand_p1 = regs[i].reg_id;
             gp1 = true;
         }
-        if (strcmp(parts[2], regs[i].name)) {
+        if ((strcmp(trim(parts[2]), regs[i].name) == 0) && !gp2) {
             operand_p2 = regs[i].reg_id;
             gp2 = true;
         }
@@ -165,8 +166,8 @@ uint16_t reg_reg_inst(char **parts, char *name, char *file, int lineno, int num,
         printf("ERROR %s:%i: instruction %s needs a register as an argument\n", file, lineno, name);
         exit(1);
     }
-
-    return ((uint16_t)opcode << 8) | ((operand_p1 >> 4) | (operand_p2 & 0x0F));
+    uint8_t operand = (operand_p1 << 4) | (operand_p2 & 0x0F);
+    return ((uint16_t)opcode << 8) | operand;
 }
 
 uint16_t reg_inst(char **parts, char *name, char *file, int lineno, int num, uint8_t opcode, uint8_t _) {
@@ -249,6 +250,7 @@ int main(int argc, char *argv[]) {
     char **parts = NULL;
     while (fgets(line, sizeof(line), input)) {
         if (strlen(trim(line)) < 2) {lineno++; continue;}
+        if (trim(line)[0] == ';') {lineno++; continue;}
         inst = 0;
         parts = split(trim(line), ' ', &num);
         

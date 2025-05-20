@@ -83,12 +83,14 @@ int main(int argc, char *argv[]) {
             case W88_OP_LDXI: w88_regs[W88_REG_X] = operand; break;
             case W88_OP_LDYI: w88_regs[W88_REG_Y] = operand; break;
 
+            
             case W88_OP_STA: w88_memory[operand] = w88_regs[W88_REG_A]; break;
             case W88_OP_STX: w88_memory[operand] = w88_regs[W88_REG_X]; break;
             case W88_OP_STY: w88_memory[operand] = w88_regs[W88_REG_Y]; break;
-
+            
             case W88_OP_JMP: w88_regs[W88_REG_PC] = operand; break;
             
+            case W88_OP_MOV: w88_regs[(operand >> 4) & 0x0F] = w88_regs[operand & 0x0F]; break;
 
             default: {
                 // BAD OPCODE

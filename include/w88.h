@@ -11,13 +11,13 @@
 #define W88_PROG 0x8000
 
 enum {
-    W88_REG_A  = 0x01,
-    W88_REG_X  = 0x02,
-    W88_REG_Y  = 0x03,
-    W88_REG_SP = 0x04,
-    W88_REG_PC = 0x05,
-    W88_REG_SR = 0x06,
-    W88_REG_COUNT = 6
+    W88_REG_A  = 0x00,
+    W88_REG_X  = 0x01,
+    W88_REG_Y  = 0x02,
+    W88_REG_SP = 0x03,
+    W88_REG_PC = 0x04,
+    W88_REG_SR = 0x05,
+    W88_REG_COUNT = 0x06
 };
 
 enum {

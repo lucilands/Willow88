@@ -1,8 +1,17 @@
-LDA 0x34
-LDX 0x46
-LDY 0x13
-STA $10
+; Load initial values into registers
+LDA $34
+LDX $46
+LDY $13
 
+; Store values from registers into memory
+STA 0x10
+STY 0x11
+
+; Copy register X into Y
 MOV Y, X
 
+; Load register X from memory
+LDX 0x11
+
+; Halt
 HLT
