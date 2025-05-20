@@ -11,13 +11,17 @@
 #define W88_PROG 0x8000
 
 enum {
-    W88_REG_A  = 0x00,
-    W88_REG_X  = 0x01,
-    W88_REG_Y  = 0x02,
-    W88_REG_SP = 0x03,
-    W88_REG_PC = 0x04,
-    W88_REG_SR = 0x05,
-    W88_REG_COUNT = 0x06
+    W88_REG_SP      = 0x00,
+    W88_REG_PC      = 0x01,
+    W88_REG_SR      = 0x02,
+    W88_REG8_COUNT  = 0x03
+};
+
+enum {
+    W88_REG_A       = 0x00,
+    W88_REG_X       = 0x01,
+    W88_REG_Y       = 0x02,
+    W88_REG16_COUNT = 0x03
 };
 
 enum {
@@ -71,8 +75,9 @@ enum {
     W88_SRFLAG_CARRY
 };
 
-extern uint16_t w88_memory[W88_MEMMAX];
-extern uint16_t w88_regs[W88_REG_COUNT];
+extern uint8_t w88_memory[W88_MEMMAX];
+extern uint8_t w88_regs8[W88_REG8_COUNT];
+extern uint16_t w88_regs16[W88_REG16_COUNT];
 
 void W88LoadRom(const char *path);
 void W88Memdump(const char *outpath);

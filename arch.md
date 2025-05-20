@@ -1,16 +1,16 @@
 # Willow88 Architecture spec
 
 
-## Memory
-The Willow88 will have 64KB of memory space, allocated as follows
+## Registers
+Willow88 has 3 8-bit registers and 3 16-bit registers.
+ - `A`: (8-bit) Accumulator register (Register used for math and logic)
+ - `X`, `Y`: (8-bit) Index registers
+ - `SP`: (16-bit) Stack pointer
+ - `PC`: (16-bit) Program counter
+ - `SR`: (16-bit) Status register
 
-### Registers
-Willow88 has 6 16-bit registers.
- - `A`: Accumulator register (Register used for math and logic)
- - `X`, `Y`: Index registers
- - `SP`: Stack pointer
- - `PC`: Program counter
- - `SR`: Status register
+## Memory
+The Willow88 has 64Kb of memory space, allocated as follows
 
 ### Memmap
 | Adress Range | Purpose |
@@ -32,8 +32,10 @@ Willow88 has 6 16-bit registers.
  - Tile set (256 tiles x 16 bytes = 4KB)
  - Sprite attribute table (position, index, pallete) (Variable size)
 
-# Instruction set 
-Instructions in Willow88 are stored as a 3 byte value, no matter the instruction, however parameters that aren't used are ignored and should be set to 0x00.
+# Cartridge
+Willow88 executables are called cartridges, a cartridge may only be 32kb large, otherwise it falls out of the adressable range of memory.
+
+# Instruction set
 
 ## Data movement
 | Mnemonic | Opcode | Format | Description |

@@ -17,9 +17,7 @@
 const w88_asm_reg_t regs[] = {
     {"A", W88_REG_A},
     {"X", W88_REG_X},
-    {"Y", W88_REG_Y},
-    {"SP", W88_REG_SP},
-    {"SR", W88_REG_SR},
+    {"Y", W88_REG_Y}
 };
 
 char *trim(char *s) {
@@ -269,10 +267,13 @@ int main(int argc, char *argv[]) {
             printf("ERROR %s:%i: Invalid operation %s\n", file, lineno, parts[0]);
         }
         
-        fwrite(&inst, sizeof(inst), 1, output);
+        uint8_t opcode = ((inst >> 8) & 0xFF);
+        uint8_t operand = (inst & 0xFF);
+
+        fwrite(&opcode, sizeof(uint8_t), 1, output);
+        if (operand) fwrite(&operand, sizeof(uint8_t), 1, output);
         lineno++;
     }
-    
     fclose(input);
     fclose(output);
     return 0;

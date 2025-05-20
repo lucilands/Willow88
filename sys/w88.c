@@ -8,8 +8,9 @@
 #include <string.h>
 
 
-uint16_t w88_memory[W88_MEMMAX] = {0};
-uint16_t w88_regs[W88_REG_COUNT] = {0};
+uint8_t w88_memory[W88_MEMMAX] = {0};
+uint8_t w88_regs8[W88_REG8_COUNT] = {0};
+uint16_t w88_regs16[W88_REG16_COUNT] = {0};
 
 void W88LoadRom(const char *path) {
     FILE *cartridge = fopen(path, "rb");
@@ -19,10 +20,15 @@ void W88LoadRom(const char *path) {
     }
 
     fseek(cartridge, 0L, SEEK_END);
-    unsigned int len = ftell(cartridge) / 2;
+    unsigned int len = ftell(cartridge);
     fseek(cartridge, 0L, SEEK_SET);
 
-    fread(w88_memory + W88_PROG, sizeof(uint16_t), len, cartridge);
+    if (len > W88_MEMMAX - W88_PROG) {
+        printf("ERROR: Cartridge %s is too long\n", path);
+        exit(1);
+    }
+
+    fread(w88_memory + W88_PROG, sizeof(uint8_t), len, cartridge);
 
     fclose(cartridge);
     printf("INFO: Loaded cartridge %s\n", path);
@@ -31,7 +37,7 @@ void W88LoadRom(const char *path) {
 void W88Memdump(const char *outpath) {
     FILE *output = fopen(outpath, "w");
 
-    fprintf(output, "w88_regs:\n\tA: 0x%04X\n\tX: 0x%04X\n\tY: 0x%04X\n\tSP: 0x%04X\n\tPC: 0x%04X\n", w88_regs[W88_REG_A], w88_regs[W88_REG_X], w88_regs[W88_REG_Y], w88_regs[W88_REG_SP], w88_regs[W88_REG_PC]);
+    fprintf(output, "w88_regs:\n\tA: 0x%02X\n\tX: 0x%02X\n\tY: 0x%02X\n\tSP: 0x%04X\n\tPC: 0x%04X\n", w88_regs8[W88_REG_A], w88_regs8[W88_REG_X], w88_regs8[W88_REG_Y], w88_regs16[W88_REG_SP], w88_regs16[W88_REG_PC]);
 
     for (unsigned int i = 0; i < W88_MEMMAX; i++) {
         switch (i) {
@@ -43,8 +49,8 @@ void W88Memdump(const char *outpath) {
             
             default: break;
         }
-        if (i % 8 == 0) fprintf(output, "\n\t0x%04X:", i);
-        fprintf(output, " 0x%04X", w88_memory[i]);
+        if (i % 8 == 0) fprintf(output, "\n\t0x%02X:", i);
+        fprintf(output, " 0x%02X", w88_memory[i]);
     }
 
     fclose(output);
@@ -61,36 +67,34 @@ int main(int argc, char *argv[]) {
 
     bool hlt = false;
 
-    uint16_t inst = 0;
     uint8_t opcode = 0;
-    uint8_t operand = 0;
 
-    w88_regs[W88_REG_PC] = W88_PROG;
+    w88_regs16[W88_REG_PC] = W88_PROG;
     while (!hlt) {
-        inst = w88_memory[w88_regs[W88_REG_PC]];
-        opcode = (inst >> 8) & 0xFF;
-        operand = inst & 0xFF;
+        opcode = w88_memory[w88_regs16[W88_REG_PC]];
 
         switch (opcode) {
             case W88_OP_NOP: break;
             case W88_OP_HLT: hlt = true; break;
 
-            case W88_OP_LDAA: w88_regs[W88_REG_A] = w88_memory[operand]; break;
-            case W88_OP_LDXA: w88_regs[W88_REG_X] = w88_memory[operand]; break;
-            case W88_OP_LDYA: w88_regs[W88_REG_Y] = w88_memory[operand]; break;
+            case W88_OP_LDAA: w88_regs8[W88_REG_A] = w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]]; break;
+            case W88_OP_LDXA: w88_regs8[W88_REG_X] = w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]]; break;
+            case W88_OP_LDYA: w88_regs8[W88_REG_Y] = w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]]; break;
 
-            case W88_OP_LDAI: w88_regs[W88_REG_A] = operand; break;
-            case W88_OP_LDXI: w88_regs[W88_REG_X] = operand; break;
-            case W88_OP_LDYI: w88_regs[W88_REG_Y] = operand; break;
+            case W88_OP_LDAI: w88_regs8[W88_REG_A] = w88_memory[++w88_regs16[W88_REG_PC]]; break;
+            case W88_OP_LDXI: w88_regs8[W88_REG_X] = w88_memory[++w88_regs16[W88_REG_PC]]; break;
+            case W88_OP_LDYI: w88_regs8[W88_REG_Y] = w88_memory[++w88_regs16[W88_REG_PC]]; break;
 
             
-            case W88_OP_STA: w88_memory[operand] = w88_regs[W88_REG_A]; break;
-            case W88_OP_STX: w88_memory[operand] = w88_regs[W88_REG_X]; break;
-            case W88_OP_STY: w88_memory[operand] = w88_regs[W88_REG_Y]; break;
+            case W88_OP_STA: w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]] = w88_regs8[W88_REG_A]; break;
+            case W88_OP_STX: w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]] = w88_regs8[W88_REG_X]; break;
+            case W88_OP_STY: w88_memory[w88_memory[++w88_regs16[W88_REG_PC]]] = w88_regs8[W88_REG_Y]; break;
             
-            case W88_OP_JMP: w88_regs[W88_REG_PC] = operand; break;
+            case W88_OP_JMP: w88_regs16[W88_REG_PC]++; w88_regs16[W88_REG_PC] = w88_memory[w88_regs16[W88_REG_PC]]; break;
             
-            case W88_OP_MOV: w88_regs[(operand >> 4) & 0x0F] = w88_regs[operand & 0x0F]; break;
+            case W88_OP_MOV:
+                w88_regs16[W88_REG_PC]++; 
+                w88_regs8[(w88_memory[w88_regs16[W88_REG_PC]] >> 4) & 0x0F] = w88_regs8[w88_memory[w88_regs16[W88_REG_PC]] & 0x0F]; break;
 
             default: {
                 // BAD OPCODE
@@ -98,7 +102,7 @@ int main(int argc, char *argv[]) {
                 break;
             }
         }
-        w88_regs[W88_REG_PC]+=1;
+        w88_regs16[W88_REG_PC]+=1;
     }
     W88Memdump("W88memdump.txt");
     return 0;
